@@ -2,7 +2,8 @@ from pynput import keyboard, mouse
 from datetime import datetime
 import time
 import pygetwindow as gw
-
+import csv
+import os
 
 
 idle_threshhold = 60 # seconds
@@ -31,15 +32,37 @@ def get_active_window():
             return "No active window"
     except Exception as e:
         return f"Error retrieving active window: {str(e)}"
-if __name__ == "__main__":
+def log_activity_to_csv(timestamp, status, app_name, file_path="activity_log.csv"):
+    file_exists = os.path.exists(file_path)
+
+    with open(file_path, mode="a", newline='', encoding='utf-8') as csv_file:
+        writer = csv.writer(csv_file)   
+        if not file_exists:
+            writer.writerow(["timestamp", "status", "application"])
+
+        writer.writerow([timestamp, status, app_name])
+        
+
+    
+
+if __name__ == "__main__": 
     print("starting activity tracker...")
     start_listening()
 
+   
     try:
         while True:
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             status = user_status()
             window_title = get_active_window()
-            print(f"[{datetime.now().strftime(' %H:%M:%S')}] User is currently: {status} | Active Window: {window_title}")
+
+            
+            print(f"[{timestamp}] User is currently: {status} | App: {window_title}")
+
+            # Save to CSV
+            log_activity_to_csv(timestamp, status, window_title)
+
             time.sleep(5)
+
     except KeyboardInterrupt:
         print("Activity tracker stopped by user.")
