@@ -9,10 +9,16 @@ import os
 idle_threshhold = 60 # seconds
 
 last_activity_time = datetime.now()
+last_logged_status = None
+last_logged_app = None
 
 def on_active(x=None):
     global last_activity_time
+    global last_logged_status, last_logged_app
     last_activity_time = datetime.now()
+    last_logged_status = None
+    last_logged_app = None
+
 
 def start_listening():
     mouse_listener = mouse.Listener(on_move=on_active, on_click=on_active, on_scroll=on_active)
@@ -49,20 +55,22 @@ if __name__ == "__main__":
     print("starting activity tracker...")
     start_listening()
 
-   
     try:
-        while True:
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            status = user_status()
-            window_title = get_active_window()
+       while True:
+           timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+           status = user_status()
+           window_title = get_active_window()
 
-            
-            print(f"[{timestamp}] User is currently: {status} | App: {window_title}")
+           print(f"[{timestamp}] User is currently: {status} | App: {window_title}")
 
-            # Save to CSV
-            log_activity_to_csv(timestamp, status, window_title)
+           #  Only log when status or app changes
+           if status != last_logged_status or window_title != last_logged_app:
+               log_activity_to_csv(timestamp, status, window_title)
+               last_logged_status = status
+               last_logged_app = window_title
 
-            time.sleep(5)
+           time.sleep(5)
+
 
     except KeyboardInterrupt:
         print("Activity tracker stopped by user.")
