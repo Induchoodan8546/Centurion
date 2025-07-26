@@ -25,30 +25,23 @@ Centurion/
 
 ---
 
-## 📦 Requirements
-
-- Python 3.9+
-- Required libraries:
-  - pynput – for mouse/keyboard activity
-  - pygetwindow – to fetch active window titles
-
-Install them using:
-
-```bash
-pip install pynput pygetwindow
-
-Run this command from the root of the project:
-python tracker/activity_logger.py
-
-The script will:
-
-Monitor keyboard and mouse activity
-Detect which app is currently in use
-Log to activity_log.csv only when app or status changes
 
 
-👤 Author
-Induchoodan
-🎓 B.Tech CSE (AI & ML), 3rd Year
-🏫 College of Engineering Attingal, Kerala
-🧠 Passionate about AI, productivity tools, and creative tech solutions
+
+---
+
+
+
+
+
+
+## 👤 Author
+👨‍💻 Name: Induchoodan
+🎓 Education: B.Tech CSE (AI & ML), 3rd Year
+🏫 Institution: College of Engineering Attingal, Kerala
+🧠 Interests: AI, Productivity Tools, Creative Tech, and Building for Impact
+
+
+
+---
+
