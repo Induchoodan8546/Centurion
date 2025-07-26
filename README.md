@@ -1,24 +1,54 @@
-# Centurion
-An AI-powered productivity analyzer to help you command your focus and optimize your work habits
-## 🚀 Features (MVP)
-- ⏱️ Track active work time
-- 💤 Detect idle time
-- 📊 Log application usage
-- 🧠 Calculate daily focus score
-- 📋 Generate daily productivity reports
+# 🛡️ Centurion
 
-## 🛠️ Tech Stack
-- Python
-- JSON / SQLite (for local data)
-- Streamlit or HTML (for dashboards)
-- scikit-learn (for future ML)
-
-## 🧠 Purpose
-Designed for students, remote workers, and productivity enthusiasts who want to build better work habits using data-driven insights.
-
-## 📌 Project Status
-🚧 In development — stay tuned.
+**Centurion** is an AI-powered personal productivity analyzer that tracks user activity (active vs. idle), monitors foreground applications, and intelligently logs only meaningful changes. It helps you understand where your time goes, without overwhelming logs or distractions.
 
 ---
 
-Created with 💡 by [Induchoodan]
+## 🚀 Features
+
+- 🕒 Real-time tracking of user status (active/idle)
+- 🪟 Foreground application title detection
+- 🧠 Logs only when status or app changes (smart logging)
+- 📊 Output stored in `activity_log.csv` for analysis
+- 🔒 Lightweight, local, and privacy-focused
+
+---
+
+## 📁 Project Structure
+
+Centurion/
+├── tracker/
+│ └── activity_logger.py # Main script for activity logging
+├── .gitignore # Ignores cache & CSV logs
+├── README.md # You're reading it
+
+
+---
+
+## 📦 Requirements
+
+- Python 3.9+
+- Required libraries:
+  - pynput – for mouse/keyboard activity
+  - pygetwindow – to fetch active window titles
+
+Install them using:
+
+```bash
+pip install pynput pygetwindow
+
+Run this command from the root of the project:
+python tracker/activity_logger.py
+
+The script will:
+
+Monitor keyboard and mouse activity
+Detect which app is currently in use
+Log to activity_log.csv only when app or status changes
+
+
+👤 Author
+Induchoodan
+🎓 B.Tech CSE (AI & ML), 3rd Year
+🏫 College of Engineering Attingal, Kerala
+🧠 Passionate about AI, productivity tools, and creative tech solutions
