@@ -1,4 +1,7 @@
 from pynput import keyboard, mouse
+
+
+
 from datetime import datetime
 import time
 import pygetwindow as gw
@@ -11,6 +14,8 @@ idle_threshhold = 60 # seconds
 last_activity_time = datetime.now()
 last_logged_status = None
 last_logged_app = None
+
+
 
 def on_active(x=None):
     global last_activity_time
@@ -74,3 +79,4 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("Activity tracker stopped by user.")
+        
