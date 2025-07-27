@@ -27,14 +27,18 @@ def print_activity_summary():
 def print_app_usage_summary():
     df = pd.read_csv("activity_log.csv")
     df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.dropna(subset=['application'])
 
     app_usage ={}
     for i in range(len(df)-1):
         current = df.iloc[i]
         next = df.iloc[i + 1]
         duration = next['timestamp'] - current['timestamp']
+        
         # Clean app title
         raw_app = current['application']
+        if not isinstance(raw_app, str):
+            continue
         if "Visual Studio Code" in raw_app:
             app = "VS Code"
         elif "Google Chrome" in raw_app:
@@ -45,10 +49,7 @@ def print_app_usage_summary():
             app = raw_app
 
 
-        if app not in app_usage:
-            app_usage[app] = duration
-        else:
-            app_usage[app] += duration
+        app_usage[app] = app_usage.get(app, pd.Timedelta(0)) + duration
 
     sorted_apps = sorted(app_usage.items(), key =lambda x: x[1], reverse=True)
 
