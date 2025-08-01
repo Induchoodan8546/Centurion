@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+#  Clean raw app name
 def clean_app_name(raw_app):
     if not isinstance(raw_app, str):
         return "Unknown"
@@ -16,6 +17,7 @@ def clean_app_name(raw_app):
     else:
         return raw_app.strip()
 
+#  Print activity summary (active, idle, total)
 def print_activity_summary():
     try:
         df = pd.read_csv("activity_log.csv")
@@ -27,12 +29,12 @@ def print_activity_summary():
         print(f"Error reading activity log: {e}")
         return
 
-        total_active_time = pd.Timedelta(0)
-        total_idle_time = pd.Timedelta(0)
+    total_active_time = pd.Timedelta(0)
+    total_idle_time = pd.Timedelta(0)
 
-    for i in range(len(df)-1):
+    for i in range(len(df) - 1):
         current_row = df.iloc[i]
-        next_row = df.iloc[i+1]
+        next_row = df.iloc[i + 1]
         duration = next_row['timestamp'] - current_row['timestamp']
         if current_row['status'] == 'active':
             total_active_time += duration
@@ -45,6 +47,7 @@ def print_activity_summary():
     print("Total idle duration:", total_idle_time)
     print("Number of entries:", len(df))
 
+#  Print app usage summary
 def print_app_usage_summary():
     try:
         df = pd.read_csv("activity_log.csv")
@@ -58,10 +61,11 @@ def print_app_usage_summary():
         return
 
     app_usage = {}
-    for i in range(len(df)-1):
+    max_duration = pd.Timedelta(hours = 1)
+    for i in range(len(df) - 1):
         current = df.iloc[i]
         next = df.iloc[i + 1]
-        duration = next['timestamp'] - current['timestamp']
+        duration = min(next['timestamp'] - current['timestamp'], max_duration)
         app = clean_app_name(current['application'])
         app_usage[app] = app_usage.get(app, pd.Timedelta(0)) + duration
 
@@ -71,6 +75,7 @@ def print_app_usage_summary():
     for app, duration in sorted_apps:
         print(f"{app} | {duration}")
 
+# 📈 Plot app usage bar chart
 def plot_app_usage(file_path="activity_log.csv"):
     try:
         df = pd.read_csv(file_path)
@@ -84,14 +89,14 @@ def plot_app_usage(file_path="activity_log.csv"):
         return
 
     app_usage = {}
-    for i in range(len(df)-1):
+    max_duration = pd.Timedelta(hours =1)
+    for i in range(len(df) - 1):
         current = df.iloc[i]
         next = df.iloc[i + 1]
-        duration = next['timestamp'] - current['timestamp']
+        duration = min(next['timestamp'] - current['timestamp'], max_duration)
         app = clean_app_name(current['application'])
         app_usage[app] = app_usage.get(app, pd.Timedelta(0)) + duration
 
-    # Sort top 5 apps
     sorted_apps = sorted(app_usage.items(), key=lambda x: x[1], reverse=True)[:5]
 
     app_names = []
@@ -103,7 +108,7 @@ def plot_app_usage(file_path="activity_log.csv"):
 
     plt.figure(figsize=(10, 5))
     bars = plt.bar(app_names, app_durations, color='skyblue')
-    plt.title('Application Usage Over Time')
+    plt.title('Top 5 Application Usage')
     plt.xlabel('Applications')
     plt.ylabel('Usage Duration (minutes)')
     plt.xticks(rotation=45, ha='right')
@@ -112,50 +117,48 @@ def plot_app_usage(file_path="activity_log.csv"):
     plt.tight_layout()
     plt.show()
 
+# ⏱️ Plot hourly productivity
+def plot_hourly_productivity(file_path="activity_log.csv"):
+    try:
+        df = pd.read_csv(file_path)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df = df[df['status'] == 'active']
+        df['hour'] = df['timestamp'].dt.hour
+    except FileNotFoundError:
+        print("No activity log found. Please run the tracker first.")
+        return
+    except Exception as e:
+        print(f"Error reading activity log: {e}")
+        return
 
-def plot_hourly_productivity(file_path = "activity_log.csv"):
-        try:
-            df = pd.read_csv(file_path)
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df = df[df['status'] == 'active']
-            df['hour'] = df['timestamp'].dt.hour
-        except FileNotFoundError:
-            print("No activity log found. Please run the tracker first.")
-            return
-        except Exception as e:
-            print(f"Error reading activity log: {e}")
-            return
-        #duration
-        hourly_usage ={hour: pd.Timedelta(0) for hour in range(24)}
-        for i in range(len(df)-1):
-            current = df.iloc[i]
-            next = df.iloc[i + 1]
-            duration = next['timestamp'] - current['timestamp']
-            hour = current['hour']
-            hourly_usage[hour] += duration
-        print("🕒 Hourly Active Durations:")
-        for hour, duration in hourly_usage.items():
-            print(f"{hour:02d}:00 → {duration}")
-        # Plotting data
+    hourly_usage = {hour: pd.Timedelta(0) for hour in range(24)}
+    max_duration = pd.Timedelta(hours=1)
+    for i in range(len(df) - 1):
+        current = df.iloc[i]
+        next = df.iloc[i + 1]
+        duration = min(next['timestamp'] - current['timestamp'], max_duration)
+        hour = current['hour']
+        hourly_usage[hour] += duration
 
-        hour_label = []
-        minutes_label = []
-        for hour in range(24):
-            minutes = hourly_usage[hour].total_seconds() / 60
-            hour_label.append(f"{hour:02d}:00")
-            minutes_label.append(minutes)
-        #plotting
-        plt.figure(figsize=(12,6))
-        plt.bar(hour_label, minutes_label, color='lightgreen')
-        plt.title("Hourly Productivity")
-        plt.xlabel("Hour")
-        plt.ylabel("Active Minutes")
-        plt.xticks(rotation=45)
-        
-        for bar, minutes, in zip(hour_label, minutes_label):
-            plt.text(bar.get_x() + bar.get_width()/ 2, bar.get_height() + 1, f'{minutes:.1f}', ha='center', fontsize=8)
-        plt.tight_layout()
-        plt.show()
+    print("\n🕒 Hourly Active Durations:")
+    for hour, duration in hourly_usage.items():
+        print(f"{hour:02d}:00 → {duration}")
+
+    hour_labels = [f"{hour:02d}:00" for hour in range(24)]
+    minutes_label = [hourly_usage[hour].total_seconds() / 60 for hour in range(24)]
+
+    plt.figure(figsize=(12, 6))
+    bars = plt.bar(hour_labels, minutes_label, color='lightgreen')
+    plt.title("Hourly Productivity")
+    plt.xlabel("Hour")
+    plt.ylabel("Active Minutes")
+    plt.xticks(rotation=45)
+
+    for bar, minutes in zip(bars, minutes_label):
+        plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1, f'{minutes:.1f}', ha='center', fontsize=8)
+    plt.tight_layout()
+    plt.show()
+
 
 if __name__ == "__main__":
     print_activity_summary()
