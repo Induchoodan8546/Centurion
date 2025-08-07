@@ -162,7 +162,8 @@ def print_daily_summary():
     try:
         df = pd.read_csv("activity_log.csv")
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[[df['status'] == 'active']]
+        df = df[df['status'] == 'active']
+        df = df.sort_values('timestamp')
         df['date'] = df['timestamp'].dt.date
     except FileNotFoundError:
         print("No activity log found. Please run the tracker first.")
