@@ -147,7 +147,7 @@ def plot_hourly_productivity(file_path="activity_log.csv"):
     hour_labels = [f"{hour:02d}:00" for hour in range(24)]
     minutes_label = [hourly_usage[hour].total_seconds() / 60 for hour in range(24)]
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(14, 7))
     bars = plt.bar(hour_labels, minutes_label, color='lightgreen')
     plt.title("Hourly Productivity")
     plt.xlabel("Hour")
@@ -158,10 +158,37 @@ def plot_hourly_productivity(file_path="activity_log.csv"):
         plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1, f'{minutes:.1f}', ha='center', fontsize=8)
     plt.tight_layout()
     plt.show()
+def print_daily_summary():
+    try:
+        df = pd.read_csv("activity_log.csv")
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df = df[[df['status'] == 'active']]
+        df['date'] = df['timestamp'].dt.date
+    except FileNotFoundError:
+        print("No activity log found. Please run the tracker first.")
+        return
+    except Exception as e:
+        print(f"Error reading activity log: {e}")
+        return
+    
+    max_duration = pd.Timedelta(hours=1)
+    daily_usage = {}
 
+    for i in range(len(df) - 1):
+        current = df.iloc[i]
+        next = df.iloc[i+1]
+        duration = min(next['timestamp'] - current['timestamp'], max_duration)
+        date = current['date']
+        daily_usage[date]= daily_usage.get(date, pd.Timedelta(0)) + duration
+    print("\n📅 Daily Active Durations:")
+    for date, duration in sorted(daily_usage.items()):
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes = remainder // 60
+        print(f"{date} → {int(hours)} hrs {int(minutes)} mins")
 
 if __name__ == "__main__":
     print_activity_summary()
     print_app_usage_summary()
     plot_app_usage()
     plot_hourly_productivity()
+    print_daily_summary()
