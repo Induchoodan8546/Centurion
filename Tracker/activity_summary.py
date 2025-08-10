@@ -158,13 +158,16 @@ def plot_hourly_productivity(file_path="activity_log.csv"):
         plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1, f'{minutes:.1f}', ha='center', fontsize=8)
     plt.tight_layout()
     plt.show()
+import pandas as pd
+
 def print_daily_summary():
     try:
         df = pd.read_csv("activity_log.csv")
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[df['status'] == 'active']
-        df = df.sort_values('timestamp')
+        df = df[df['status'] == 'active']  # ✅ Filter only active rows
         df['date'] = df['timestamp'].dt.date
+        df['year_week'] = df['timestamp'].dt.strftime('%Y-W%U')  # Weekly
+        df['month_label'] = df['timestamp'].dt.to_period('M').astype(str)  # Monthly
     except FileNotFoundError:
         print("No activity log found. Please run the tracker first.")
         return
@@ -174,18 +177,46 @@ def print_daily_summary():
     
     max_duration = pd.Timedelta(hours=1)
     daily_usage = {}
+    weekly_usage = {}
+    monthly_usage = {}
 
+    # Loop through rows
     for i in range(len(df) - 1):
         current = df.iloc[i]
-        next = df.iloc[i+1]
-        duration = min(next['timestamp'] - current['timestamp'], max_duration)
+        nxt = df.iloc[i + 1]
+        duration = min(nxt['timestamp'] - current['timestamp'], max_duration)
+
+        # Daily
         date = current['date']
-        daily_usage[date]= daily_usage.get(date, pd.Timedelta(0)) + duration
+        daily_usage[date] = daily_usage.get(date, pd.Timedelta(0)) + duration
+
+        # Weekly
+        week = current['year_week']
+        weekly_usage[week] = weekly_usage.get(week, pd.Timedelta(0)) + duration
+
+        # Monthly
+        month = current['month_label']
+        monthly_usage[month] = monthly_usage.get(month, pd.Timedelta(0)) + duration
+
+    # --- Output ---
     print("\n📅 Daily Active Durations:")
     for date, duration in sorted(daily_usage.items()):
         hours, remainder = divmod(duration.total_seconds(), 3600)
         minutes = remainder // 60
         print(f"{date} → {int(hours)} hrs {int(minutes)} mins")
+
+    print("\n📆 Weekly Active Durations:")
+    for week, duration in sorted(weekly_usage.items()):
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes = remainder // 60
+        print(f"{week} → {int(hours)} hrs {int(minutes)} mins")
+
+    print("\n🗓 Monthly Active Durations:")
+    for month, duration in sorted(monthly_usage.items()):
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes = remainder // 60
+        print(f"{month} → {int(hours)} hrs {int(minutes)} mins")
+
 
 if __name__ == "__main__":
     print_activity_summary()
